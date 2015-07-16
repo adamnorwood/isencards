@@ -1,0 +1,93 @@
+IsenCards
+
+@DESC isencards=%rBefore you stands a card table made of solid oak, thickly cut and stained black. The surface is roughly circular, and a number of gouges have been cut in the splitting wood. Two oversized chairs rest opposing each other, and in between the two sits the dealer, a large thuggish uruk with a glazed look in his eye. He motions for you to take a seat.%r%r\[OOC Note\] Type '[ansi(h,cardhelp)]' for instructions on how to play!
+
+&CARDHELP_CMD isencards=$cardhelp:think [pemit(%#,%r[center(IsenCards Commands,79,-)]%r%rHere are the commands:%r%r%b%bSit%t%t%tSits you down to the game%, and sets you as a player.%r%b%bPlayers%t%tShows a list of the players.%r%b%bHand%t%t%tShows you your hand.%r%b%bQuit%t%t%tLets you quit the game.%r%b%bHouse%t%t%tMakes the House draw its card and starts the turn.%r%b%bPlay a <Whatever>%tPlays a <Whatever> from your deck.%r%b%bScores%t%tShows the current score.%r%b%bValues%t%tShows the values of the cards.%r%b%bWinlist%t%tShows the number of games won.%r%b%bRules%t%t%tShows the rules of the game.%r%b%bCardhelp%t%tShows this list.%r%b%bExample%t%tShows an example of game play.%r%rMany thanks to [ansi(h,Underoc)] for the original coding of the game!%rThis was originally coded in 1996%, adapted for Khazad-Dum by [ansi(h,Saturnalius)]%, and now rebuilt for Isengard! +Mail Underoc about any bugs.%r
+
+&CARD_PLAYED1 isencards=snaga
+
+&CARD_PLAYED2 isencards=snaga
+
+&CARD_PLAYED_HOUSE isencards=snaga
+
+&DECK1 isencards=snaga uruk uruk-hai raven bear wolf dragon shield sword hand wizard chakdral darkness
+
+&DECK2 isencards=snaga uruk uruk-hai raven bear wolf dragon shield sword hand wizard chakdral darkness
+
+&DECK_HOUSE isencards=snaga uruk uruk-hai raven bear wolf dragon shield sword hand wizard chakdral darkness
+
+&DECK_NORMAL isencards=snaga uruk uruk-hai raven bear wolf dragon shield sword hand wizard chakdral darkness
+
+&EXAMPLE isencards=$example:think [pemit(%#,%r[center(IsenCards Example,79,-)]%rHere's an example of gameplay:%r%r%b%b> Sit%rIsenCards: You sit down as Player 1.%r%b%b> House%rIsenCards: The House draws an sword.%r%b%b> Play an Uruk.%rIsenCards: You play an Uruk.%rIsenCards: The other player needs to draw a card.%r%b%b<The other player plays>%rIsenCards: The other Player has chosen %p card.%r%rIsenCards%r--------%rPlayer One played: Uruk%rPlayer Two played: Wizard%rThe card at stake: Sword%rPlayer Two wins!%r%r[repeat(-,79)]%r)]
+
+@FAILURE isencards=As you struggle to pick up the table, the dealer winks at you, indicating that you might have better luck picking up one of the females at the bar instead.
+
+&FUN_BOTH_VALID isencards=[and(u(fun_valid_player,1),u(fun_valid_player,2))]
+
+&FUN_ENDGAME isencards=[pemit(v(player1) [v(player2)]/list,%rGame Over!%rThe Champion is: [switch(gt(v(score_player1),v(score_player2)),1,name(v(player1))[u(fun_winlist,v(player1))][oemit(%l/me,[name(v(player1))] has beaten [name(v(player2))] at a game of IsenCards!)],switch(gt(v(score_player2),v(score_player1)),1,name(v(player2))[u(fun_winlist,v(player2))][oemit(%l/me,name(v(player2)) has beaten [name(v(player1))] at a game of IsenCards!)],Draw game!))]%rYour name is cleared from the Current Players list.)][set(me,player1:)][set(me,player2:)][set(me,deck1:[v(deck_normal)])][set(me,deck2:[v(deck_normal)])][set(me,deck_house:[v(deck_normal)])][set(me,house_chosen:0)][set(me,house_cards_left:13)][set(me,player1_played:0)][set(me,player2_played:0)]
+
+&FUN_HOUSE_CHOOSE isencards=[switch(v(house_chosen),1,pemit(%#,The Dealer looks at you%, and simply points to the overturned card on %p deck.),[set(me,house_cards_left:[words(v(deck_house))])][setq(0,inc(rand(v(house_cards_left))))][setq(1,[squish(extract(v(deck_house),%q0,1))])][set(me,card_played_house:%q1)][set(me,house_chosen:1)][switch(u(fun_valid_player,1),1,pemit(v(player1),The Dealer draws [art(%q1)] [capstr(%q1)]%, and places it face-up on top of %p deck.))][switch(u(fun_valid_player,2),1,pemit(v(player2),The Dealer draws [art(%q1)] [capstr(%q1)]%, and places it face-up on top of %p deck.))][set(me,deck_house:[squish([before(v(deck_house),v(card_played_house))]%b[after(v(deck_house),v(card_played_house))])])][set(me,house_cards_left:[words(v(deck_house))])],pemit(%#,The Dealer looks at you%, and wonders what you think you're doing.))]
+
+&FUN_PLAY isencards=setq(0,v(player1) [v(player2)])[pemit(%q0/list,%rIsenCards%r--------%rPlayer One played [art(v(card_played1))] [capstr(v(card_played1))].%rPlayer Two played [art(v(card_played2))] [capstr(v(card_played2))].%rThe Card at stake: [capstr(v(card_played_house))])][setq(1,member(v(deck_normal),v(card_played1)))][setq(2,member(v(deck_normal),v(card_played2)))][setq(3,member(v(deck_normal),v(card_played_house)))][switch(gt(%q1,%q2),1,[pemit(%q0/list,Player One wins the turn!)][set(me,score_player1:[add(v(score_player1),%q3)])],switch(gt(%q2,%q1),1,[pemit(%q0/list,Player Two wins t%p turn!)][set(me,score_player2:[add(v(score_player2),%q3)])],pemit(%q0/list,The turn is a Push! No winner!)))][switch(v(house_cards_left),0,u(fun_endgame,%q0),set(me,house_chosen:0)[set(me,house_cards_left:[sub(v(house_cards_left),1)])][set(me,player1_played:0)][set(me,player2_played:0)])]
+
+&FUN_SEATED isencards=[or(inlist(v(player1),%#),inlist(v(player2),%#))]
+
+&FUN_SIT_PLAYER isencards=[setq(0,[switch(%0,1,2,2,1)])][switch(%#,v(player%q0),pemit(%#,The Dealer wonders why you stand up%, and sit back down to a game you already started.),[set(me,player%0:%#)][pemit(%#,You sit down to the table%, and the dealer hands you a deck of cards.)][switch(u(fun_valid_player,%q0),0,pemit(%#,The Dealer points out that there is no second player.),pemit(v(player%q0),%N sits down to the table%, and the old Dealer nods to %o.))])]
+
+&FUN_VALID_PLAYER isencards=[and(hasattr(me,player%0),nearby(me,v(player%0)))]
+
+&FUN_WINLIST isencards=[setq(0,[member(v(win_list),%0)])][setq(1,[switch(%0,v(player1),1,v(player2),2)])][switch([inlist(v(win_list),%0)],0,[set(me,win_list:[squish([v(win_list)]%b%0)])][set(me,win_list_stats:[squish([v(win_list_stats)]%b1)])][set(me,win_list_aves:[squish([v(win_list_aves)]%b[v(score_player%q1)])])],1,[set(me,win_list_stats:[squish([replace(v(win_list_stats),%q0,[inc(extract(v(win_list_stats),%q0,1))])])])][set(me,win_list_aves:[squish([replace(v(win_list_aves),%q0,[avg([extract(v(win_list_aves),%q0,1)]%b[v(score_player%q1)])])])])])]
+
+&GREETING isencards= ^*arrives*:[switch([extract(v(win_list_stats),[member(v(win_list),%#)],1)],[last(sort(v(win_list_stats),n))],oemit(%l/%l,The card dealer looks up and sees %N walk in. "Ah%, the Card Master!"),[switch([rand(15)],0,oemit(%l/%l,The card dealer looks up at the newcomer.))])]
+
+&HAND_CMD isencards=$hand:think [setq(0,[switch(%#,v(player1),1,v(player2),2)])][switch(u(fun_seated),0,pemit(%#,The dealer gives you an odd stare and says%, "You ain't got a deck!"),[pemit(%#,%rIsenCards%r--------%rYour hand:%r[iter(v(deck%q0),%r%b%b[capstr(##)])]%r)])]
+
+&HOUSE_CARDS_LEFT isencards=13
+
+&HOUSE_CHOSEN isencards=0
+
+&HOUSE_CMD isencards=$house:think [switch(or(inlist(v(player1),%#),inlist(v(player2),%#)),0,pemit(%#,The dealer looks at you%, and wonders what you are doing.),switch(and(u(fun_valid_player,1),u(fun_valid_player,2)),0,pemit(%#,The dealer points out that there is no second player.),[u(fun_house_choose)]))]
+
+&INSPECT_CARDS isencards=%rThe cards found on the card table are heavy-weight pieces of pressed paper, coated in thin wax, and painted with rather nice-quality pictures on one side. The opposite side bears a rather unique pattern of rings drawn in blue ink.%r
+
+&INSPECT_DEALER isencards=You look at the dealer, and he glares back at you.  He's a brawny uruk, but not very tall. His brow slopes back at a rather steep angle, giving him eyes that appear to be well sunken, but you can still see the dull yellow of them looking out at you.  He smiles an orcish smile, his teeth crooked and almost falling out.  On his arm is a tattoo of the Hammer Cult. The dealer shifts his gaze back to the game.
+
+@LALIAS isencards=out
+
+@LISTEN isencards=*
+
+@OFAILURE isencards=groans and strains as %s tries to lift the table.
+
+@OSUCCESS isencards=picks up the card table with one finger, and puts it in %p pocket.
+
+&PLAYER1_PLAYED isencards=0
+
+&PLAYER2_PLAYED isencards=0
+
+&PLAYERS_LIST_CMD isencards=$players:think [pemit(%#,%rIsenCards Players%r[repeat(-,16)]%rPlayer 1: [switch(u(fun_valid_player,1),0,None,name(v(player1)))]%rPlayer 2: [switch(u(fun_valid_player,2),0,None,name(v(player2)))]%r)]
+
+&PLAY_CMD isencards=$play * *:think [switch([or(inlist(%0,an),inlist(%0,a))],0,pemit(%#,The Dealer looks at you and says%, "What?"),[switch(u(fun_seated),0,pemit(%#,The uruk who is dealing the cards looks at you and says%, "You ain't playing yet!"),[setq(0,[switch(%#,v(player1),1,v(player2),2)])][switch(v(house_chosen),0,pemit(%#,IsenCards: Type 'House' to start the turn.),[switch(u(fun_both_valid),0,pemit(%#,The dealer points out the lack of a second player.),[switch(v(player%q0_played),1,pemit(%#,The dealer says to you\, a look of malice in his eyes\, "You tryin' to cheat or somethin'?"),[switch([inlist(v(deck%q0),[lcstr(%1)])],0,pemit(%#,You feel embarrassed by the fact that there is no [capstr(%1)] in your deck.),[setq(1,[lcstr(%1)])][setq(2,[switch(%q0,1,2,2,1)])][set(me,card_played%q0:%1)][set(me,player%q0_played:1)][set(me,deck%q0:[squish([before(v(deck%q0),[lcstr(%1)])][after(v(deck%q0),[lcstr(%1)])])])][pemit(%#,IsenCards: You play [art(%1)] [capstr(%1)].)][pemit(v(player%q2),You see the other player swipe a card from his deck decisively.)])])])])][switch(and(v(player1_played),v(player2_played)),0,[switch(u(fun_valid_player,%q2),1,pemit(%#,The other player still shuffles through his cards\, trying to decide.))],u(fun_play))])])]
+
+&QUIT_CMD isencards=$quit:think [setq(0,[switch(%#,v(player1),1,v(player2),2,3)])][switch(u(fun_valid_player,%q0),0,pemit(%#,The dealer shoots a glance at you and wonders why you try to leave a game you aren't playing.),[pemit(%#,You stand up and walk away from the table.)][switch(%q0,1,[switch(u(fun_valid_player,2),1,pemit(v(player2),%N stands up and leaves the game.))],2,[switch(u(fun_valid_player,1),1,pemit(v(player1),%N stands up and leaves the game.))])])][switch(u(fun_valid_player,%q0),1,[set(me,player%q0:)][set(me,deck1:[v(deck_normal)])][set(me,deck2:[v(deck_normal)])][set(me,deck_house:[v(deck_normal)])][set(me,house_chosen:0)][set(me,house_cards_left:13)][set(me,score_player1:0)][set(me,score_player2:0)][set(me,player%q0_played:0)][set(me,score_player%q0)])]
+
+&RULES_CMD isencards=$rules:think [pemit(%#,%r[center(IsenCards Rules,78,-)]%r%rT%p is the third revesion of IsenCards%, the card game of orcs!%r%rHere are the rules:%r%rEach player starts with a deck of 13 cards%, and the 'House' has its deck of 13 cards. They range in value from one to thirteen%, with Snaga as the lowest and Darkness as the highest. The game consists of 13 turns%, which are started by having the House draw the top card from its shuffled deck. This card is the card at stake%, and is what determines the score. Then each player secretly selects a card that he wants to play from %p deck%, and whoever has the highest valued card between the two players wins the turn. The winning player receives points equal to the value of the House's card. The cards that the players played are removed from their decks%, and the card that the house played is removed from its deck. Once the house runs out of cards to play the game ends%, and the player with the highest score wins. If this makes no sense%, please +mail Underoc!%r%rFor an example%, type 'Example'.%rFor the values of the cards type 'Values'.%r%r[repeat(-,78)])]
+
+&SCORES_CMD isencards=$scores:think [pemit(%#,%rYou look at an odd parchment that has tally marks on it:%r%rIsenCard Scores%r---------------%rPlayer One: [v(score_player1)]%rPlayer Two: [v(score_player2)]%r)]
+
+&SCORE_PLAYER1 isencards=0
+
+&SCORE_PLAYER2 isencards=0
+
+&SIT_CMD isencards=$sit:think [switch(u(fun_valid_player,1),0,[u(fun_sit_player,1)][set(me,score_player1:0)][set(me,score_player2:0)],switch(u(fun_valid_player,2),0,[u(fun_sit_player,2)][set(me,score_player1:0)][score(player2:0)],pemit(%#,The Dealer gives you the evil eye as you try to join as the third person of a two player game.)))]
+
+@SUCCESS isencards=You lift up the table with ease.
+
+&VALUES isencards=$values:think [pemit(%#,%r[center(IsenCards Values,28)]%r[repeat(-,29)]%rSnaga:[space(5)]1%tDragon:[space(5)]7%rUruk:[space(6)]2%tShield:[space(5)]8%rUruk-Hai:%b%b3%tSword:[space(6)]9%rRaven:[space(5)]4%tHand:[space(6)]10%rBear:[space(6)]5%tWizard:[space(4)]11%rWolf:[space(6)]6%tChakdral:%b%b12%r%t%tDarkness:%b%b13%r)]
+
+&WIN_LIST isencards=
+
+&WIN_LIST_AVES isencards=
+
+&WIN_LIST_CMD isencards=$winlist:think pemit(%#/s,%r[center(IsenCards Win Records,30)]%r[repeat(-,30)]%r[iter(v(win_list),%r[ljust(Name: [name(##)],25)][ljust(Wins: [extract(v(win_list_stats),[member(v(win_list),##)],1)],5)]%t[ljust(Averaging: [extract(v(win_list_aves),[member(v(win_list),##)],1)] points,10)])]%r)
+
+&WIN_LIST_STATS isencards=
